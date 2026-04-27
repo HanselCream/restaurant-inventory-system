@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Empty } from "@/components/ui/empty";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { ClipboardList, ArrowRight, ArrowUpCircle, ArrowDownCircle, Settings2 } from "lucide-react";
 import type { StockLog } from "@/lib/types";
 
@@ -67,11 +67,15 @@ export function RecentActivity({ logs }: RecentActivityProps) {
       </CardHeader>
       <CardContent>
         {logs.length === 0 ? (
-          <Empty
-            icon={ClipboardList}
-            title="No activity yet"
-            description="Stock movements will appear here"
-          />
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <ClipboardList />
+              </EmptyMedia>
+              <EmptyTitle>No activity yet</EmptyTitle>
+              <EmptyDescription>Stock movements will appear here</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <div className="space-y-3">
             {logs.map((log) => {

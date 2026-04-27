@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Empty } from "@/components/ui/empty";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { AlertTriangle, ArrowRight, CheckCircle } from "lucide-react";
 import type { InventoryItem } from "@/lib/types";
 
@@ -31,11 +31,15 @@ export function LowStockAlert({ items }: LowStockAlertProps) {
       </CardHeader>
       <CardContent>
         {items.length === 0 ? (
-          <Empty
-            icon={CheckCircle}
-            title="All stocked up!"
-            description="No items are below minimum stock level"
-          />
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <CheckCircle className="text-green-500" />
+              </EmptyMedia>
+              <EmptyTitle>All stocked up!</EmptyTitle>
+              <EmptyDescription>No items are below minimum stock level</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <div className="space-y-3">
             {items.slice(0, 5).map((item) => (
