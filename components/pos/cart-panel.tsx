@@ -57,9 +57,9 @@ export function CartPanel({
 
     setIsLoading(true);
     const supabase = createClient();
-
     const orderNumber = `ORD-${Date.now()}`;
 
+    // 1. Create order
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
@@ -81,23 +81,65 @@ export function CartPanel({
       return;
     }
 
-    const orderItems = cart.map((item) => ({
-      order_id: order.id,
-      menu_item_id: item.menu_item.id,
-      quantity: item.quantity,
-      unit_price: item.menu_item.price,
-      subtotal: item.menu_item.price * item.quantity,
-      notes: item.notes || null,
-    }));
-
+    // 2. Create order items
     const { error: itemsError } = await supabase
       .from("order_items")
-      .insert(orderItems);
+      .insert(
+        cart.map((item) => ({
+          order_id: order.id,
+          menu_item_id: item.menu_item.id,
+          quantity: item.quantity,
+          unit_price: item.menu_item.price,
+          subtotal: item.menu_item.price * item.quantity,
+          notes: item.notes || null,
+        }))
+      );
 
     if (itemsError) {
       toast.error("Order created but failed to add items");
       setIsLoading(false);
       return;
+    }
+
+    // 3. Deduct inventory
+    for (const cartItem of cart) {
+      const { data: ingredients } = await supabase
+        .from("menu_item_ingredients")
+        .select("inventory_item_id, quantity_used")
+        .eq("menu_item_id", cartItem.menu_item.id);
+
+      if (!ingredients?.length) continue;
+
+      for (const ing of ingredients) {
+        const { data: inv } = await supabase
+          .from("inventory_items")
+          .select("current_stock")
+          .eq("id", ing.inventory_item_id)
+          .single();
+
+        if (!inv) continue;
+
+        const deductAmount = ing.quantity_used * cartItem.quantity;
+        const newStock = Math.max(0, inv.current_stock - deductAmount);
+
+        await supabase
+          .from("inventory_items")
+          .update({
+            current_stock: newStock,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", ing.inventory_item_id);
+
+        await supabase.from("stock_logs").insert({
+          item_id: ing.inventory_item_id,
+          type: "out",
+          quantity: deductAmount,
+          previous_stock: inv.current_stock,
+          new_stock: newStock,
+          reason: "Sold",
+          notes: `${orderNumber} — ${cartItem.menu_item.name} x${cartItem.quantity}`,
+        });
+      }
     }
 
     toast.success(`Order ${orderNumber} placed!`);
@@ -149,7 +191,9 @@ export function CartPanel({
                       >
                         <Minus className="h-3 w-3" />
                       </button>
-                      <span className="text-sm w-4 text-center">{item.quantity}</span>
+                      <span className="text-sm w-4 text-center">
+                        {item.quantity}
+                      </span>
                       <button
                         onClick={() =>
                           onUpdateQuantity(item.menu_item.id, item.quantity + 1)
@@ -166,7 +210,9 @@ export function CartPanel({
                   <Input
                     placeholder="Item notes..."
                     value={item.notes}
-                    onChange={(e) => onUpdateNotes(item.menu_item.id, e.target.value)}
+                    onChange={(e) =>
+                      onUpdateNotes(item.menu_item.id, e.target.value)
+                    }
                     className="h-7 text-xs"
                   />
                 </div>
@@ -177,26 +223,22 @@ export function CartPanel({
 
             {/* Order Type */}
             <div className="flex gap-2">
-              <button
+              <Button
+                variant={orderType === "dine_in" ? "default" : "outline"}
+                className="flex-1"
+                size="sm"
                 onClick={() => setOrderType("dine_in")}
-                className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-                  orderType === "dine_in"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
-                }`}
               >
                 Dine In
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={orderType === "takeout" ? "default" : "outline"}
+                className="flex-1"
+                size="sm"
                 onClick={() => setOrderType("takeout")}
-                className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-                  orderType === "takeout"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
-                }`}
               >
                 Takeout
-              </button>
+              </Button>
             </div>
 
             {orderType === "dine_in" && (
