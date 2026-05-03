@@ -33,34 +33,22 @@ import {
   ClipboardList,
   LogOut,
   ChevronUp,
+  ShoppingCart,
+  UtensilsCrossed,
+  Receipt,
 } from "lucide-react";
 
+
+
 const navItems = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Inventory",
-    href: "/dashboard/inventory",
-    icon: Package,
-  },
-  {
-    title: "Categories",
-    href: "/dashboard/categories",
-    icon: FolderOpen,
-  },
-  {
-    title: "Suppliers",
-    href: "/dashboard/suppliers",
-    icon: Truck,
-  },
-  {
-    title: "Stock Logs",
-    href: "/dashboard/logs",
-    icon: ClipboardList,
-  },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { title: "Inventory", href: "/dashboard/inventory", icon: Package },
+  { title: "Categories", href: "/dashboard/categories", icon: FolderOpen },
+  { title: "Suppliers", href: "/dashboard/suppliers", icon: Truck },
+  { title: "Stock Logs", href: "/dashboard/logs", icon: ClipboardList },
+  { title: "POS", href: "/dashboard/pos", icon: ShoppingCart },
+  { title: "Menu Items", href: "/dashboard/pos/menu", icon: UtensilsCrossed },
+  { title: "Orders", href: "/dashboard/pos/orders", icon: Receipt },
 ];
 
 interface DashboardSidebarProps {

@@ -1,9 +1,51 @@
 export interface Category {
   id: string;
   name: string;
+  category: string;
   description: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface MenuItem {
+  category?: Category;
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  category_id: string;
+  inventory_item_id: string;
+  image_url: Text;
+  is_available: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  menu_item_id: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+  notes: string | null;
+  created_at: string;
+  menu_item?: MenuItem;
+}
+
+export interface Order {
+  id: string;
+  order_number: string;
+  status: "pending" | "preparing" | "ready" | "completed" | "cancelled";
+  type: "dine_in" | "takeout";
+  table_number: string | null;
+  subtotal: number;
+  tax: number;
+  total: number;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  items?: OrderItem[];
 }
 
 export interface Supplier {
